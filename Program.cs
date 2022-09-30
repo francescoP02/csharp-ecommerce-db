@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 EcommerceContext db = new EcommerceContext();
 
-//Customer francesco = new Customer();
-//francesco.Name = "Francesco";
-//francesco.Surname = "Partipilo";
-//francesco.Email = "francesco@gmail.com";
+//Employee newemployee = new Employee();
+//newemployee.Name = "Francesco";
+//newemployee.Surname = "Partipilo";
+//newemployee.Level = "Customer";
 
-//db.Customer.Add(francesco);
+//db.Employee.Add(newemployee);
 
 //db.SaveChanges();
 
@@ -21,6 +21,7 @@ do
     Console.WriteLine("What do you want to do?");
     Console.WriteLine("-If you want to register insert 'register'");
     Console.WriteLine("-Are you register? 'login' for login");
+    Console.WriteLine("-If you are an employee 'employee'");
     Console.WriteLine("-For terminate the process insert 'exit'");
     choice = Console.ReadLine();
     bool logged = false;
@@ -48,7 +49,7 @@ do
 
                 if (logged)
                 {
-                    Main(newCustomer);
+                    CustomerLogged(newCustomer);
                 }
             }
             catch (Exception ex)
@@ -74,8 +75,33 @@ do
 
                 if (logged)
                 {
-                    Main(customer);
+                    CustomerLogged(customer);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Email not found");
+                Console.WriteLine();
+            }
+            break;
+        case ("employee"):
+            try
+            {
+                Console.Clear();
+                Console.WriteLine("Insert your name:");
+                string loginName = Console.ReadLine();
+                Console.WriteLine("Insert your surname:");
+                string loginSurname = Console.ReadLine();
+
+                Employee employee;
+                employee = db.Employee.Where(employee => employee.Name == loginName && employee.Surname == loginSurname).First();
+                employee = (from s in db.Employee
+                            where s.Name == loginName && s.Surname == loginSurname
+                            select s).First();
+                logged = true;
+
+                Main(employee);
+        
             }
             catch (Exception ex)
             {
@@ -87,14 +113,14 @@ do
 
 }while (choice != "exit");
 
-void Main(Customer customer){
+void Main(Employee employee){
     Console.Clear();
-    Console.WriteLine($"****Welcome {customer.Name}****");
+    Console.WriteLine($"****Welcome {employee.Name} {employee.Surname}****");
     do
     {
         Console.WriteLine("What do you want to do?");
         Console.WriteLine("-If you want to add a product insert 'product'");
-        Console.WriteLine("-If you want to make an order insert 'order'");
+        Console.WriteLine("-If you want to view product list insert 'list'");
         Console.WriteLine("-For terminate the process insert 'stop'");
         userInput = Console.ReadLine();
         switch (userInput)
@@ -127,8 +153,8 @@ void Main(Customer customer){
                 }
                 break;
 
-            case ("order"):
-                insertOrder(customer);
+            case ("list"):
+                insertOrder();
                 break;
         }
 
@@ -136,7 +162,17 @@ void Main(Customer customer){
 
 }
 
-void insertOrder(Customer customer)
+void viewList(EcommerceContext context)
+{
+    List<Product> products = context.Product.OrderBy(product => product.Name).ToList<Product>();
+
+    foreach (Product product in products)
+    {
+        Console.WriteLine($"Product: {product.Id} - {product.Name}");
+    }
+}
+
+void insertOrder()
 {
     using (EcommerceContext context = new EcommerceContext())
     {
@@ -144,12 +180,34 @@ void insertOrder(Customer customer)
         Console.WriteLine("****Product's List****");
         Console.WriteLine();
 
-        List<Product> products = context.Product.OrderBy(product => product.Name).ToList<Product>();
-
-        foreach (Product product in products)
-        {
-            Console.WriteLine($"Product: {product.Id} - {product.Name}");
-        }
+        viewList(context);
     }
+}
+
+void CustomerLogged(Customer customer)
+{
+    Console.Clear();
+    Console.WriteLine($"****Welcome {customer.Name}****");
+    do
+    {
+        Console.WriteLine("What do you want to do?");
+        Console.WriteLine("-If you want to view product list insert 'list'");
+        Console.WriteLine("-For terminate the process insert 'stop'");
+        userInput = Console.ReadLine();
+        switch (userInput)
+        {
+            case ("list"):
+                using (EcommerceContext context = new EcommerceContext())
+                {
+                    //View of all the products
+                    Console.WriteLine("****Product's List****");
+                    Console.WriteLine();
+
+                    viewList(context);
+                }
+                break;
+        }
+
+    } while (userInput != "stop");
 }
 
