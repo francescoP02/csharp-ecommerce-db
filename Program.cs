@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Microsoft.EntityFrameworkCore;
 using csharp_ecommerce_db;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 EcommerceContext db = new EcommerceContext();
 
@@ -69,7 +70,6 @@ do
                 customer = (from s in db.Customer
                             where s.Email == loginMail
                             select s).First();
-                Console.WriteLine($"Hello {customer.Name}");
                 logged = true;
 
                 if (logged)
@@ -88,11 +88,13 @@ do
 }while (choice != "exit");
 
 void Main(Customer customer){
-    Console.WriteLine("Inizia");
+    Console.Clear();
+    Console.WriteLine($"****Welcome {customer.Name}****");
     do
     {
         Console.WriteLine("What do you want to do?");
         Console.WriteLine("-If you want to add a product insert 'product'");
+        Console.WriteLine("-If you want to make an order insert 'order'");
         Console.WriteLine("-For terminate the process insert 'stop'");
         userInput = Console.ReadLine();
         switch (userInput)
@@ -101,14 +103,14 @@ void Main(Customer customer){
                 try
                 {
                     Console.Clear();
-                    Console.WriteLine("Inserisci un nuovo prodotto: ");
-                    Console.WriteLine("Inserisci il nome del prodotto: ");
+                    Console.WriteLine("****Insert new product****: ");
+                    Console.WriteLine("Insert product's name: ");
                     string productName = Console.ReadLine();
 
-                    Console.WriteLine("Inserisci la descrizione del prodotto: ");
+                    Console.WriteLine("Insert product's description: ");
                     string productDescription = Console.ReadLine();
 
-                    Console.WriteLine("Inserisci il prezzo del prodotto: ");
+                    Console.WriteLine("Insert product's price: ");
                     double productPrice = double.Parse(Console.ReadLine());
 
                     using (EcommerceContext context = new EcommerceContext())
@@ -124,9 +126,30 @@ void Main(Customer customer){
                     Console.WriteLine();
                 }
                 break;
+
+            case ("order"):
+                insertOrder(customer);
+                break;
         }
 
     } while (userInput != "stop");
 
+}
+
+void insertOrder(Customer customer)
+{
+    using (EcommerceContext context = new EcommerceContext())
+    {
+        //View of all the products
+        Console.WriteLine("****Product's List****");
+        Console.WriteLine();
+
+        List<Product> products = context.Product.OrderBy(product => product.Name).ToList<Product>();
+
+        foreach (Product product in products)
+        {
+            Console.WriteLine($"Product: {product.Id} - {product.Name}");
+        }
+    }
 }
 
